@@ -1,0 +1,62 @@
+---
+title: "Data Acquisition and Management Project 3"
+author: "Chun San Yip"
+date: "2020/03/22"
+output: html_document
+---
+
+Overview:
+It is a group project to provide answer on the question “Which are the most valued data science skills?”
+
+Load all the required packages.
+```{r load-packages, message = FALSE}
+library(tidyverse)
+```
+
+I google the questions on the web and looked at 10 websites. I manually collect those data and put it in a csv file. Read the CSV file
+```{r, message = FALSE}
+theFile <- "https://raw.githubusercontent.com/ferrysany/CUNY607P3/master/valuedSkills.csv"
+skills <- read_csv(theFile, skip=2)
+```
+
+Tame and Tidy the CSV file
+```{r}
+a<-max(str_count(skills$Skill, "\\s"))
+
+i=1
+newCol <- c(1)
+for(i in 1:(a+1)) {
+  newCol[i] <- as.character(i)
+}
+
+newSkills <- skills %>% 
+  separate(Skill, into = newCol, sep="\\s", fill="right")%>%
+  gather(key="nCol", value="nSkill", 2:9) %>%
+  mutate(nSkill = str_to_lower(nSkill)) %>%
+  mutate(nSkill = str_replace(nSkill, "[ ,?:]", "") ) %>%
+  filter(!is.na(nSkill)) %>%
+  arrange(desc(nSkill)) 
+
+gskills <- newSkills %>%
+  group_by(nSkill)%>%
+  summarise(n=n())%>%
+  arrange(desc(n))
+
+gskills
+```
+
+Plot a BAR chart
+```{r}
+ggplot(data=(gskills[1:15,])) +
+  geom_col(mapping = aes(x = fct_reorder(nSkill, n), y = n)) +
+  coord_flip()
+
+```
+
+
+The top skills should be "Data" (including data analysis, data visualization, etc.), "Machine Learning", "Programming", "Communication" and "SQL". (Machine and Learning are actually linked together after reviewing the csv file again)
+
+
+
+
+
